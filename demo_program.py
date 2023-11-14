@@ -2,6 +2,9 @@ import cv2
 import argparse
 import numpy as np
 
+from skimage.feature import graycomatrix
+from skimage import io, color
+
 def edge_detection_segmentation(image_path):
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     edges = cv2.Canny(image, 50, 150)
@@ -25,17 +28,18 @@ def color_based_segmentation(image_path, lower_range, upper_range):
 
 def texture_based_segmentation(image_path):
     image = cv2.imread(image_path)
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    distances = [1]
+    angles = [0]
+    glcm = graycomatrix(gray, distances=distances, angles=angles, symmetric=True, normed=True)
+    contrast = glcm[0, 0, 0, 0] 
 
-    # Metode GLCM (contoh)
-    glcm = cv2.imgproc.text.CV_GLCM()
-    glcm.set_images(gray, gray)
-    contrast = glcm.compute(0, cv2.imgproc.text.CV_GLCM_CONTRAST)
-
-    # Ambil piksel dengan kontrast tertinggi
-    _, max_val, _, max_loc = cv2.minMaxLoc(contrast)
-    mask = np.zeros_like(gray)
-    mask[max_loc] = 255
+    # Consider using the grayscale image instead of the single contrast value
+    _, threshold = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    mask = np.where(gray > threshold, 255, 0).astype(np.uint8)
+    mask = cv2.resize(mask, (image.shape[1], image.shape[0]))
+    mask = mask.astype(image.dtype)
 
     result = cv2.bitwise_and(image, image, mask=mask)
 
@@ -91,12 +95,15 @@ def real_time_segmentation(method):
             frame = cv2.bitwise_and(frame, frame, mask=mask)
         elif method == "texture":
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            glcm = cv2.imgproc.text.CV_GLCM()
-            glcm.set_images(gray, gray)
-            contrast = glcm.compute(0, cv2.imgproc.text.CV_GLCM_CONTRAST)
-            _, max_val, _, max_loc = cv2.minMaxLoc(contrast)
-            mask = np.zeros_like(gray)
-            mask[max_loc] = 255
+            distances = [1]
+            angles = [0]
+            glcm = graycomatrix(gray, distances=distances, angles=angles, symmetric=True, normed=True)
+            contrast = glcm[0, 0, 0, 0] 
+            # Consider using the grayscale image instead of the single contrast value
+            _, threshold = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            mask = np.where(gray > threshold, 255, 0).astype(np.uint8)
+            mask = cv2.resize(mask, (frame.shape[1], frame.shape[0]))
+            mask = mask.astype(frame.dtype)
             frame = cv2.bitwise_and(frame, frame, mask=mask)
         elif method == "intensity":
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
