@@ -14,7 +14,7 @@ annotator = sv.BoxAnnotator()
 def on_prediction(predictions, image):
     labels = [p["class"] for p in predictions["predictions"]]
     detections = sv.Detections.from_roboflow(predictions)
-    detections = detections[detections.confidence > 0.9]
+    detections = detections[detections.confidence > 0.4]
     print(detections)
     cv2.imshow(
         "Prediction",
