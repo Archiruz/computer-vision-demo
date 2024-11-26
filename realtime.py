@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-API_KEY = os.getenv('ROBOFLOW_API_KEY')
+API_KEY = os.getenv("ROBOFLOW_API_KEY")
 
 annotator = sv.BoxAnnotator()
+
 
 def on_prediction(predictions, image):
     labels = [p["class"] for p in predictions["predictions"]]
@@ -18,19 +19,16 @@ def on_prediction(predictions, image):
     print(detections)
     cv2.imshow(
         "Prediction",
-        annotator.annotate(
-            scene=image,
-            detections=detections,
-            labels=labels
-        )
+        annotator.annotate(scene=image, detections=detections, labels=labels),
     ),
     cv2.waitKey(1)
 
+
 inference.Stream(
-    source="webcam", # or rtsp stream or camera id
-    model="banana-ripening-process/2", # from Universe
+    source="webcam",  # or rtsp stream or camera id
+    model="banana-ripening-process/2",  # from Universe
     output_channel_order="BGR",
-    use_main_thread=True, # for opencv display
+    use_main_thread=True,  # for opencv display
     on_prediction=on_prediction,
-    api_key=API_KEY
+    api_key=API_KEY,
 )

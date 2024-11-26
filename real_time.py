@@ -27,7 +27,7 @@ while True:
     combined = np.vstack((top_row, bottom_row))
 
     # Kurangi resolusi citra hasil pengolahan
-    reduced_resolution = cv2.resize(combined, (320, 240))
+    reduced_resolution = cv2.resize(combined, (1280, 960))
 
     # Tampilkan citra hasil pengolahan dengan resolusi yang lebih rendah
     cv2.imshow('Real-Time Image Processing', reduced_resolution)
